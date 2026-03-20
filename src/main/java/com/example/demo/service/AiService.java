@@ -5,17 +5,13 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
-import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingSearchResult;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
-import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -28,24 +24,14 @@ public class AiService {
     private final EmbeddingStore<TextSegment> store;
     private final AtomicBoolean documentsIngested = new AtomicBoolean(false);
 
-    public AiService() {
-        this.model = OllamaChatModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("phi")
-                .timeout(Duration.ofSeconds(120))
-                .build();
-
-        this.embeddingModel = OllamaEmbeddingModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("nomic-embed-text")
-                .timeout(Duration.ofSeconds(120))
-                .build();
-
-        this.store = QdrantEmbeddingStore.builder()
-                .host("localhost")
-                .port(6334)
-                .collectionName("docs")
-                .build();
+    public AiService(
+            ChatLanguageModel model,
+            EmbeddingModel embeddingModel,
+            EmbeddingStore<TextSegment> store
+    ) {
+        this.model = model;
+        this.embeddingModel = embeddingModel;
+        this.store = store;
     }
 
     public String ask(String question) {
